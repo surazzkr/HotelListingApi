@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,16 +10,21 @@ namespace HotelListingApi.DTO
     public class CreateCountryDTO
     {
         [Required]
-        [StringLength(maximumLength: 50, ErrorMessage = "Country Name is too long")]
+        [StringLength(maximumLength: 50, ErrorMessage = "Country Name Is Too Long")]
         public string Name { get; set; }
+
         [Required]
-        [StringLength(maximumLength: 3, ErrorMessage = "Short Country Name is too long")]
+        [StringLength(maximumLength: 2, ErrorMessage = "Short Country Name Is Too Long")]
         public string ShortName { get; set; }
     }
-    public class CountryDTO: CreateCountryDTO
+    public class UpdateCountryDTO : CreateCountryDTO
+    {
+        public IList<CreateHotelDTO> Hotels { get; set; }
+    }
+
+    public class CountryDTO : CreateCountryDTO
     {
         public int Id { get; set; }
         public IList<HotelDTO> Hotels { get; set; }
-
     }
 }
