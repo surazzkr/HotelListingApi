@@ -1,3 +1,4 @@
+using AspNetCoreRateLimit;
 using HotelListingApi.Configurations;
 using HotelListingApi.IRepository;
 using HotelListingApi.Models;
@@ -34,7 +35,16 @@ namespace HotelListingApi
             services.AddDbContext<DatabaseContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("SqlConnection")));
 
+            /*
+            services.AddMemoryCache();
+            services.ConfigureRateLimiting();
+            services.AddHttpContextAccessor();
+            */
+
+            services.AddHttpCacheHeaders();
+            
             services.AddAuthentication();
+            
             services.ConfigureIdentity();
             services.ConfigureJWT(Configuration);
 
@@ -57,8 +67,15 @@ namespace HotelListingApi
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "HotelListingApi", Version = "v1" });
             });
 
-            services.AddControllers().AddNewtonsoftJson(op =>
+            services.AddControllers(config => {
+                config.CacheProfiles.Add("120SecondsDuration", new CacheProfile
+                {
+                    Duration = 120
+                });
+            }).AddNewtonsoftJson(op =>
             op.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+            services.ConfigureVersioning();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -73,9 +90,15 @@ namespace HotelListingApi
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "HotelListingApi v1"));
 
+            app.ConfigureExceptionHandler();
+
             app.UseCors("AllowAll");
 
+            app.UseResponseCaching();
+            app.UseHttpCacheHeaders();
+            //app.UseIpRateLimiting();
             app.UseRouting();
+            
 
             app.UseAuthentication();
             app.UseAuthorization();
